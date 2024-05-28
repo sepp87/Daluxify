@@ -60,4 +60,22 @@ public class Util {
         }
         return fallbackPath;
     }
+
+    public static File createFile(File file) {
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return file;
+    }
+
+    public static File createDirectory(File file) {
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        return file;
+    }
 }

@@ -54,25 +54,12 @@ public class Config {
     }
 
     private static void createFilesAndDirectories() {
-        createFile(new File(config.appRootDirectory + CONFIG_DIRECTORY));
-        createFile(new File(config.appRootDirectory + BASE_URL_FILE));
-        createFile(new File(config.appRootDirectory + API_KEY_FILE));
-        createFile(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
-        createFile(new File(config.appRootDirectory + DONE_DIRECTORY));
-    }
+        Util.createDirectory(new File(config.appRootDirectory + DONE_DIRECTORY));
+        Util.createDirectory(new File(config.appRootDirectory + CONFIG_DIRECTORY));
+        Util.createFile(new File(config.appRootDirectory + BASE_URL_FILE));
+        Util.createFile(new File(config.appRootDirectory + API_KEY_FILE));
+        Util.createFile(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
 
-    private static void createFile(File file) {
-        if (!file.exists()) {
-            try {
-                if (file.isDirectory()) {
-                    file.mkdir();
-                } else {
-                    file.createNewFile();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
     }
 
     public String getAppRootDirectory() {

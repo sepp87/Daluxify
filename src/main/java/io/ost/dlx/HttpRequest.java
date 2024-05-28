@@ -55,6 +55,7 @@ public class HttpRequest {
         try {
             Response response = call.execute();
             if(!response.isSuccessful()) {
+                response.body().close();
                 return;
             }
             FileOutputStream fos = new FileOutputStream(target);
