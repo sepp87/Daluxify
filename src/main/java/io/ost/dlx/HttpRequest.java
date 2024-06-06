@@ -4,6 +4,7 @@ import com.squareup.okhttp.Call;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,12 +42,8 @@ public class HttpRequest {
 
     public static void download(String endpoint, File target) {
 
-        String apiKey = Config.get().getApiKey();
-        String url = endpoint;
-
         Request request = new Request.Builder()
-                .header("X-API-KEY", apiKey)
-                .url(url)
+                .url(endpoint)
                 .build();
 
         OkHttpClient client = new OkHttpClient();
@@ -54,17 +51,18 @@ public class HttpRequest {
 
         try {
             Response response = call.execute();
-            if(!response.isSuccessful()) {
+            if (!response.isSuccessful()) {
+                System.out.println("Download failed: " + response.code() + " " + response.message());
                 response.body().close();
                 return;
             }
             FileOutputStream fos = new FileOutputStream(target);
-            fos.write(response.body().bytes());
+            ResponseBody body = response.body();
+            fos.write(body.bytes());
             fos.close();
         } catch (IOException ex) {
             Logger.getLogger(HttpRequest.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
 }

@@ -18,6 +18,7 @@ public class Config {
     private String baseUrl;
     private String apiKey;
     private List<String> projectNames;
+    private List<String> taskTypes;
 
     private static final String CONFIG_DIRECTORY = "config" + File.separatorChar;
     private static final String BUILD_DIRECTORY = "build" + File.separatorChar;
@@ -25,6 +26,7 @@ public class Config {
     private static final String API_KEY_FILE = CONFIG_DIRECTORY + "api-key.txt";
     private static final String BASE_URL_FILE = CONFIG_DIRECTORY + "base-url.txt";
     private static final String PROJECT_NAMES_FILE = CONFIG_DIRECTORY + "project-names.txt";
+    private static final String TASK_TYPES_FILE = CONFIG_DIRECTORY + "task-types.txt";
 
     private Config() {
     }
@@ -46,6 +48,7 @@ public class Config {
             config.baseUrl = Util.readFileAsString(new File(config.appRootDirectory + BASE_URL_FILE));
             config.apiKey = Util.readFileAsString(new File(config.appRootDirectory + API_KEY_FILE));
             config.projectNames = Util.readFileAsStringList(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
+            config.taskTypes = Util.readFileAsStringList(new File(config.appRootDirectory + TASK_TYPES_FILE));
 
         } catch (IOException ex) {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
@@ -59,7 +62,7 @@ public class Config {
         Util.createFile(new File(config.appRootDirectory + BASE_URL_FILE));
         Util.createFile(new File(config.appRootDirectory + API_KEY_FILE));
         Util.createFile(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
-
+        Util.createFile(new File(config.appRootDirectory + TASK_TYPES_FILE));
     }
 
     public String getAppRootDirectory() {
@@ -80,6 +83,10 @@ public class Config {
 
     public List<String> getProjectNames() {
         return projectNames;
+    }
+
+    public List<String> getTaskTypes() {
+        return taskTypes;
     }
 
 }

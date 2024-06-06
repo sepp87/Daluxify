@@ -12,6 +12,11 @@ public class App {
     public static void main(String[] args) throws IOException {
 
         TaskAttachmentsDownloader.download();
+
+//        List<Project> projects = getSelectedProjects();
+//        for (Project p: projects) {
+//            List<Task> tasks = Task.getTasks(p);
+//        }
     }
 
 

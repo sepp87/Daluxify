@@ -8,6 +8,7 @@ import io.ost.dlx.api.Project;
 import io.ost.dlx.api.Task;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +23,17 @@ public class TaskAttachmentsDownloader {
 
     public static void download() {
         List<Project> projects = getSelectedProjects();
+
         for (Project project : projects) {
             Map<String, Task> tasks = getTasksAsMap(project);
             List<Attachment> attachments = Attachment.getAttachments(project);
+            attachments = filterAttachmentsByAvailableTaskIds(attachments, tasks.keySet());
             Map<String, String> filenames = getUniqueFilenames(attachments);
 
             String projectDirectory = Config.get().getDoneDirectory() + project.projectName + File.separatorChar;
-            Util.createDirectory(new File(projectDirectory));
+            if (!attachments.isEmpty()) {
+                Util.createDirectory(new File(projectDirectory));
+            }
 
             System.out.println();
             System.out.println(attachments.size() + " Attachments to download for project " + project.projectName);
@@ -91,10 +96,36 @@ public class TaskAttachmentsDownloader {
         Map<String, Task> result = new TreeMap<>();
 
         List<Task> tasks = Task.getTasks(project);
+        tasks = filterTasksByType(tasks);
         for (Task task : tasks) {
             result.put(task.taskId, task);
         }
         return result;
     }
-    
+
+    private static List<Task> filterTasksByType(List<Task> tasks) {
+        List<String> types = Config.get().getTaskTypes();
+        if (types.isEmpty()) {
+            return tasks;
+        }
+
+        List<Task> result = new ArrayList<>();
+        for (Task task : tasks) {
+            if (types.contains(task.type.name)) {
+                result.add(task);
+            }
+        }
+        return result;
+    }
+
+    private static List<Attachment> filterAttachmentsByAvailableTaskIds(Collection<Attachment> attachments, Collection<String> taskIds) {
+        List<Attachment> result = new ArrayList<>();
+        for (Attachment attachment : attachments) {
+            if (taskIds.contains(attachment.taskId)) {
+                result.add(attachment);
+            }
+        }
+        return result;
+    }
+
 }
