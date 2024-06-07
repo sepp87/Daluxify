@@ -1,5 +1,10 @@
 package io.ost.dlx;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -8,6 +13,7 @@ import com.squareup.okhttp.ResponseBody;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,4 +71,27 @@ public class HttpRequest {
         }
     }
 
+    public static String getNextPageLink(String responseBody) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonArray links = gson.fromJson(responseBody, JsonObject.class).getAsJsonArray("links");
+        Iterator<JsonElement> iterator = links.iterator();
+
+        String self = "";
+        String nextPage = "";
+
+        while (iterator.hasNext()) {
+            JsonObject link = iterator.next().getAsJsonObject();
+            String rel = link.get("rel").getAsString();
+            if (rel.equals("self")) {
+                self = link.get("href").getAsString();
+            } else if (rel.equals("nextPage")) {
+                nextPage = link.get("href").getAsString();
+            }
+        }
+
+        if (nextPage.equals("") || nextPage.equals(self)) {
+            return null;
+        }
+        return nextPage;
+    }
 }

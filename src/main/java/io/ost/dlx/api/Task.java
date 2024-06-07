@@ -61,36 +61,12 @@ public class Task {
             return Collections.emptyList();
         }
         List<Task> list = new ArrayList<>();
-        String link = getNextPageLink(json);
+        String link = HttpRequest.getNextPageLink(json);
         if (link != null) {
             String result = HttpRequest.get(link);
             list.addAll(deserializeAndGetNextPage(result));
         }
         return list;
-    }
-
-    private static String getNextPageLink(String json) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonArray links = gson.fromJson(json, JsonObject.class).getAsJsonArray("links");
-        Iterator<JsonElement> iterator = links.iterator();
-
-        String self = "";
-        String nextPage = "";
-
-        while (iterator.hasNext()) {
-            JsonObject link = iterator.next().getAsJsonObject();
-            String rel = link.get("rel").getAsString();
-            if (rel.equals("self")) {
-                self = link.get("href").getAsString();
-            } else if (rel.equals("nextPage")) {
-                nextPage = link.get("href").getAsString();
-            }
-        }
-
-        if (nextPage.equals("") || nextPage.equals(self)) {
-            return null;
-        }
-        return nextPage;
     }
 
     public class Type {
