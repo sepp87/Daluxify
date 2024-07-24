@@ -3,9 +3,11 @@ package io.ost.dlx.solutions;
 import io.ost.dlx.Config;
 import io.ost.dlx.HttpRequest;
 import io.ost.dlx.Util;
-import io.ost.dlx.api.Attachment;
-import io.ost.dlx.api.Project;
-import io.ost.dlx.api.Task;
+import io.ost.dlx.api.Projects;
+import io.ost.dlx.model.Project;
+import io.ost.dlx.api.Tasks;
+import io.ost.dlx.model.TaskAttachment;
+import io.ost.dlx.model.Task;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,11 +24,11 @@ import java.util.TreeMap;
 public class TaskAttachmentsDownloader {
 
     public static void download() {
-        List<Project> projects = getSelectedProjects();
+        List<Project> projects = Projects.getSelectedProjects();
 
         for (Project project : projects) {
             Map<String, Task> tasks = getTasksAsMap(project);
-            List<Attachment> attachments = Attachment.getAttachments(project);
+            List<TaskAttachment> attachments = Tasks.getTaskAttachments(project);
             attachments = filterAttachmentsByAvailableTaskIds(attachments, tasks.keySet());
             Map<String, String> filenames = getUniqueFilenames(attachments);
 
@@ -38,7 +40,7 @@ public class TaskAttachmentsDownloader {
             System.out.println();
             System.out.println(attachments.size() + " Attachments to download for project " + project.projectName);
             int i = 1;
-            for (Attachment attachment : attachments) {
+            for (TaskAttachment attachment : attachments) {
                 if (i == 10) {
 //                break;
                 }
@@ -55,10 +57,10 @@ public class TaskAttachmentsDownloader {
         }
     }
 
-    private static Map<String, String> getUniqueFilenames(List<Attachment> attachments) {
+    private static Map<String, String> getUniqueFilenames(List<TaskAttachment> attachments) {
         Map<String, String> result = new TreeMap<>();
         Set<String> filenames = new HashSet<>();
-        for (Attachment attachment : attachments) {
+        for (TaskAttachment attachment : attachments) {
             String name = attachment.mediaFile.name;
             String url = attachment.mediaFile.fileDownload;
             String nameAndTaskIdCombo = name + attachment.taskId;
@@ -79,23 +81,10 @@ public class TaskAttachmentsDownloader {
         return name.substring(0, index) + "(2)" + extension;
     }
 
-    public static List<Project> getSelectedProjects() {
-        List<Project> result = new ArrayList<>();
-        List<Project> projects = Project.getProjects();
-        List<String> toSelect = Config.get().getProjectNames();
-
-        for (Project project : projects) {
-            if (toSelect.contains(project.projectName)) {
-                result.add(project);
-            }
-        }
-        return result;
-    }
-
     public static Map<String, Task> getTasksAsMap(Project project) {
         Map<String, Task> result = new TreeMap<>();
 
-        List<Task> tasks = Task.getTasks(project);
+        List<Task> tasks = Tasks.getTasks(project);
         tasks = filterTasksByType(tasks);
         for (Task task : tasks) {
             result.put(task.taskId, task);
@@ -118,9 +107,9 @@ public class TaskAttachmentsDownloader {
         return result;
     }
 
-    private static List<Attachment> filterAttachmentsByAvailableTaskIds(Collection<Attachment> attachments, Collection<String> taskIds) {
-        List<Attachment> result = new ArrayList<>();
-        for (Attachment attachment : attachments) {
+    private static List<TaskAttachment> filterAttachmentsByAvailableTaskIds(Collection<TaskAttachment> attachments, Collection<String> taskIds) {
+        List<TaskAttachment> result = new ArrayList<>();
+        for (TaskAttachment attachment : attachments) {
             if (taskIds.contains(attachment.taskId)) {
                 result.add(attachment);
             }

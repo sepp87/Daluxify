@@ -1,8 +1,11 @@
 package io.ost.dlx.solutions;
 
-import io.ost.dlx.api.Company;
-import io.ost.dlx.api.Project;
-import io.ost.dlx.api.User;
+import io.ost.dlx.api.Companies;
+import io.ost.dlx.api.Projects;
+import io.ost.dlx.api.Users;
+import io.ost.dlx.model.Company;
+import io.ost.dlx.model.Project;
+import io.ost.dlx.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +20,9 @@ public class ProjectUsersExporter {
     public static void print() {
         // TODO Method not completely implemented due to missing phone numbers
         
-        Project project = Project.getProjects().get(0);
-        List<User> users = User.getUsers(project);
-        List<Company> companies = Company.getCompanies(project);
+        Project project = Projects.getProjects().get(0);
+        List<User> users = Users.getUsers(project);
+        List<Company> companies = Companies.getCompanies(project);
 
         Map<String, Company> companyMap = new TreeMap<>();
         for (Company company : companies) {
