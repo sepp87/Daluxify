@@ -1,9 +1,10 @@
 package io.ost.dlx.api;
 
-import io.ost.dlx.Config;
-import io.ost.dlx.HttpRequest;
+import io.ost.dlx.ApiClient;
 import io.ost.dlx.model.Project;
-import java.util.ArrayList;
+import io.ost.dlx.model.ProjectMetadata;
+import io.ost.dlx.model.ProjectMetadata.ProjectMetadataValue;
+import io.ost.dlx.model.ProjectMetadataMapping;
 import java.util.List;
 
 /**
@@ -12,25 +13,46 @@ import java.util.List;
  */
 public class Projects {
 
-    public static List<Project> getProjects() {
-        String result = HttpRequest.get("/5.0/projects");
-        return HttpRequest.deserializeAndGetNextPage(result, Project.class);
+    public static List<Project> getProjects(ApiClient client) {
+        String result = client.get("/5.0/projects");
+        return client.deserializeAndGetNextPage(result, Project.class);
     }
 
-    public static List<Project> getSelectedProjects() {
-        List<Project> result = new ArrayList<>();
-        List<Project> projects = Projects.getProjects();
-        List<String> toSelect = Config.get().getProjectNames();
+//    public static Project createProject(Project project, ApiClient client) {
+//        String result = client.post("/5.0/projects/", "");
+//        return client.deserializeObject(result, Project.class);
+//    }
+//
+//    public static Project updateProject(Project project, ApiClient client) {
+//        String result = client.patch("/5.0/projects/" + project.projectId, "");
+//        return client.deserializeObject(result, Project.class);
+//    }
 
-        if (toSelect.isEmpty()) {
-            return projects;
-        }
+    public static List<ProjectMetadata> getProjectMetadata(Project project, ApiClient client) {
+        String result = client.get("/1.0/projects/" + project.projectId + "/metadata");
+        return client.deserializeAndGetNextPage(result, ProjectMetadata.class);
+    }
 
-        for (Project project : projects) {
-            if (toSelect.contains(project.projectName)) {
-                result.add(project);
-            }
-        }
-        return result;
+    public static List<ProjectMetadataMapping> getProjectMetadataToCreate(ApiClient client) {
+        String result = client.get("/1.0/projects/metadata/1.0/mappings");
+        return client.deserializeAndGetNextPage(result, ProjectMetadataMapping.class);
+
+    }
+
+    public static List<ProjectMetadataValue> getProjectMetadataValuesToCreate(ProjectMetadataMapping mapping, ApiClient client) {
+        String result = client.get("/1.0/projects/metadata/1.0/mappings/" + mapping.key + "/values");
+        return client.deserializeAndGetNextPage(result, ProjectMetadataValue.class);
+
+    }
+
+    public static List<ProjectMetadataMapping> getProjectMetadataToUpdate(Project project, ApiClient client) {
+        String result = client.get("/1.0/projects/" + project.projectId + "metadata/1.0/mappings");
+        return client.deserializeAndGetNextPage(result, ProjectMetadataMapping.class);
+
+    }
+
+    public static List<ProjectMetadataValue> getProjectMetadataValuesToUpdate(Project project, ProjectMetadataMapping mapping, ApiClient client) {
+        String result = client.get("/1.0/projects/" + project.projectId + "metadata/1.0/mappings/" + mapping.key + "/values");
+        return client.deserializeAndGetNextPage(result, ProjectMetadataValue.class);
     }
 }

@@ -6,7 +6,7 @@ import io.ost.dlx.ObjectResponse;
  *
  * @author Joost
  */
-public class Form {
+public class Form implements Identifiable{
     
     public String formId;
     public String type;

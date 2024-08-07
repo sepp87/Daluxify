@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author Joost
  */
-public class File {
+public class File  implements Nameable, Identifiable {
     public String fileId;
     public String fileRevisionId;
     public String fileName;

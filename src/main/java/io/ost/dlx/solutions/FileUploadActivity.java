@@ -1,10 +1,13 @@
 package io.ost.dlx.solutions;
 
+import io.ost.dlx.ApiClient;
+import io.ost.dlx.Config;
 import io.ost.dlx.api.FileAreas;
 import io.ost.dlx.api.Files;
 import io.ost.dlx.api.Projects;
 import io.ost.dlx.model.File;
 import io.ost.dlx.model.FileArea;
+import io.ost.dlx.model.Nameable;
 import io.ost.dlx.model.Project;
 import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -20,12 +23,14 @@ import java.util.TreeMap;
  */
 public class FileUploadActivity {
 
-    public static void getActivity() {
-        List<Project> projects = Projects.getSelectedProjects();
+    public static void getActivity(ApiClient client) {
+        List<Project> candidates = Projects.getProjects(client);
+        List<Project> projects = Nameable.filterListByNames(candidates, Config.get().getProjectNames());
+        
         for (Project p : projects) {
             LocalDate projectStart = LocalDate.parse(p.created.split("T")[0]);
-            List<FileArea> fileAreas = FileAreas.getFileAreas(p);
-            List<File> files = Files.getFiles(p, fileAreas.get(0));
+            List<FileArea> fileAreas = FileAreas.getFileAreas(p, client);
+            List<File> files = Files.getFiles(p, fileAreas.get(0), client);
             System.out.println(files.size() + "\t files contained in " + p.projectName);
             Map<Long, Integer> daysDeltaToCount = new TreeMap<>();
             Map<Long, Integer> weeksDeltaToCount = new TreeMap<>();

@@ -1,16 +1,17 @@
 package io.ost.dlx;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.squareup.okhttp.Call;
+import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Request.Builder;
+import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
-import io.ost.dlx.model.User;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,38 +28,67 @@ import java.util.logging.Logger;
  *
  * @author Joost
  */
-public class HttpRequest {
+public class ApiClient {
 
-    public static String get(String endpoint) {
+    private static final Map<String, ApiClient> API_CLIENTS = new TreeMap<>();
 
-        String baseUrl = Config.get().getBaseUrl();
-        String apiKey = Config.get().getApiKey();
+    private final String apiKey;
+    private final String baseUrl;
+    private final OkHttpClient client;
+
+    public ApiClient(String apiKey, String baseUrl) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+        this.client = new OkHttpClient();
+        API_CLIENTS.put(apiKey, this);
+    }
+
+    public String get(String endpoint) {
+        return executeRequest(Method.GET, endpoint, null);
+    }
+
+    public String post(String endpoint, String json) {
+        return executeRequest(Method.POST, endpoint, json);
+    }
+
+    public String patch(String endpoint, String json) {
+        return executeRequest(Method.PATCH, endpoint, json);
+    }
+
+    private String executeRequest(Method method, String endpoint, String json) {
         String url = endpoint.startsWith(baseUrl) ? endpoint : baseUrl + endpoint;
 
-        Request request = new Request.Builder()
-                .header("X-API-KEY", apiKey)
-                .url(url)
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-        Call call = client.newCall(request);
-
         try {
+            Builder builder = new Request.Builder()
+                    .header("X-API-KEY", apiKey)
+                    .url(url);
+
+            RequestBody body = json == null || json.equals("") ? null : RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+            switch (method) {
+                case PATCH:
+                    builder.patch(body);
+                    break;
+                case POST:
+                    builder.post(body);
+                    break;
+            }
+
+            Request request = builder.build();
+            Call call = client.newCall(request);
             Response response = call.execute();
             return response.isSuccessful() ? response.body().string() : null;
-        } catch (IOException ex) {
-            Logger.getLogger(HttpRequest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | IllegalArgumentException ex) {
+            Logger.getLogger(ApiClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
 
-    public static void download(String endpoint, File target) {
+    public void download(String endpoint, File target) {
 
         Request request = new Request.Builder()
                 .url(endpoint)
                 .build();
 
-        OkHttpClient client = new OkHttpClient();
         Call call = client.newCall(request);
 
         try {
@@ -71,23 +103,23 @@ public class HttpRequest {
             fos.write(body.bytes());
             fos.close();
         } catch (IOException ex) {
-            Logger.getLogger(HttpRequest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ApiClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public static <T> List<T> deserializeAndGetNextPage(String json, Class<T> classOfT) {
-        List<T> list = deserialize(json, classOfT);
+    public <T> List<T> deserializeAndGetNextPage(String json, Class<T> classOfT) {
+        List<T> list = deserializeList(json, classOfT);
         List<T> next = getNextPage(json, classOfT);
         list.addAll(next);
         return list;
     }
 
-    private static <T> List<T> deserialize(String json, Class<T> classOfT) {
+    private <T> List<T> deserializeList(String json, Class<T> classOfT) {
         if (json == null) {
             return Collections.emptyList();
         }
         List<T> list = new ArrayList<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = RequestParser.getGson();
         JsonArray items = gson.fromJson(json, JsonObject.class).getAsJsonArray("items");
         Iterator<JsonElement> iterator = items.iterator();
         while (iterator.hasNext()) {
@@ -104,22 +136,38 @@ public class HttpRequest {
         return list;
     }
 
-    private static <T> List<T> getNextPage(String json, Class<T> classOfT) {
+    public <T> T deserializeObject(String json, Class<T> classOfT) {
+        Gson gson = RequestParser.getGson();
+        return deserializeObject(gson, gson.fromJson(json, JsonObject.class), classOfT);
+    }
+
+    private <T> T deserializeObject(Gson gson, JsonObject object, Class<T> classOfT) {
+        if (object.get("data") != null) {
+            object = object.get("data").getAsJsonObject();
+        }
+        var t = gson.fromJson(object, classOfT);
+        if (App.LOG) {
+            System.out.println(gson.toJson(t));
+        }
+        return t;
+    }
+
+    private <T> List<T> getNextPage(String json, Class<T> classOfT) {
         if (json == null) {
             return Collections.emptyList();
         }
         List<T> list = new ArrayList<>();
         String link = getNextPageLink(json);
         if (link != null) {
-            String result = HttpRequest.get(link);
+            String result = this.get(link);
             List<T> ts = deserializeAndGetNextPage(result, classOfT);
             list.addAll(ts);
         }
         return list;
     }
 
-    public static String getNextPageLink(String responseBody) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public String getNextPageLink(String responseBody) {
+        Gson gson = RequestParser.getGson();
         JsonArray links = gson.fromJson(responseBody, JsonObject.class).getAsJsonArray("links");
         Iterator<JsonElement> iterator = links.iterator();
 
@@ -142,4 +190,8 @@ public class HttpRequest {
         return nextPage;
     }
 
+}
+
+enum Method {
+    GET, POST, PATCH;
 }

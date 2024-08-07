@@ -4,8 +4,8 @@ package io.ost.dlx.model;
  *
  * @author Joost
  */
-public class VersionSet {
-    
+public class VersionSet implements Nameable, Identifiable {
+
     public String versionSetId;
     public String name;
     public String description;

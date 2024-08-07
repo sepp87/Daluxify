@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author Joost
  */
-public class Project {
+public class Project implements Nameable, Identifiable {
 
     public String projectId;
     public String projectName;
@@ -15,7 +15,7 @@ public class Project {
     public String address;
     public String number;
     public String created;
-    public String closed;
+    public String closing;
     public List<Module> modules;
 
     public class Module {

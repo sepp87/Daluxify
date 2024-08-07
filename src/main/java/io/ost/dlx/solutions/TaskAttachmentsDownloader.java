@@ -1,11 +1,13 @@
 package io.ost.dlx.solutions;
 
 import io.ost.dlx.Config;
-import io.ost.dlx.HttpRequest;
+import io.ost.dlx.ApiClient;
+import io.ost.dlx.App;
 import io.ost.dlx.Util;
 import io.ost.dlx.api.Projects;
 import io.ost.dlx.model.Project;
 import io.ost.dlx.api.Tasks;
+import io.ost.dlx.model.Nameable;
 import io.ost.dlx.model.TaskAttachment;
 import io.ost.dlx.model.Task;
 import java.io.File;
@@ -23,12 +25,13 @@ import java.util.TreeMap;
  */
 public class TaskAttachmentsDownloader {
 
-    public static void download() {
-        List<Project> projects = Projects.getSelectedProjects();
+    public static void download(ApiClient client) {
+        List<Project> candidates = Projects.getProjects(client);
+        List<Project> projects = Nameable.filterListByNames(candidates, Config.get().getProjectNames());
 
         for (Project project : projects) {
-            Map<String, Task> tasks = getTasksAsMap(project);
-            List<TaskAttachment> attachments = Tasks.getTaskAttachments(project);
+            Map<String, Task> tasks = getTasksAsMap(project, client);
+            List<TaskAttachment> attachments = Tasks.getTaskAttachments(project, client);
             attachments = filterAttachmentsByAvailableTaskIds(attachments, tasks.keySet());
             Map<String, String> filenames = getUniqueFilenames(attachments);
 
@@ -51,7 +54,7 @@ public class TaskAttachmentsDownloader {
                 String targetPath = taskDirectory + filenames.get(url);
                 File target = new File(targetPath);
                 System.out.println(i + " Downloading " + targetPath);
-                HttpRequest.download(url, target);
+                client.download(url, target);
                 i++;
             }
         }
@@ -81,10 +84,10 @@ public class TaskAttachmentsDownloader {
         return name.substring(0, index) + "(2)" + extension;
     }
 
-    public static Map<String, Task> getTasksAsMap(Project project) {
+    public static Map<String, Task> getTasksAsMap(Project project, ApiClient client) {
         Map<String, Task> result = new TreeMap<>();
 
-        List<Task> tasks = Tasks.getTasks(project);
+        List<Task> tasks = Tasks.getTasks(project, client);
         tasks = filterTasksByType(tasks);
         for (Task task : tasks) {
             result.put(task.taskId, task);

@@ -7,6 +7,8 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -25,7 +27,7 @@
         <finalName>Daluxify</finalName>
         <plugins>   
             
-            <!-- See https://maven.apache.org/plugins/ for more plugins -->    
+            <!-- See https://maven.apache.org/plugins/ for more plugins    
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -35,9 +37,9 @@
                     <target>11</target>
                     <fork>true</fork>
                 </configuration>
-            </plugin>
+            </plugin>--> 
                  
-            <!-- Set main class and add classplath -->
+            <!-- Set main class and add classplath 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -51,7 +53,7 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
+            </plugin>-->
             
             <!-- https://stackoverflow.com/questions/574594/how-can-i-create-an-executable-runnable-jar-with-dependencies-using-maven -->
             <plugin>
@@ -99,3 +101,4 @@
         </plugins>        
     </build>
 </project>
+

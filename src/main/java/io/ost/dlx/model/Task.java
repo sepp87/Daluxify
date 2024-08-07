@@ -6,8 +6,8 @@ import io.ost.dlx.ListResponse;
  *
  * @author Joost
  */
-public class Task {
-    
+public class Task implements Identifiable {
+
     public String taskId;
     public String subject;
     public String usage;

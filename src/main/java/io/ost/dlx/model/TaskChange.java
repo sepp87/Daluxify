@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @author Joost
  */
-public class TaskChange {
+public class TaskChange implements Identifiable{
 
     public String taskId;
     public String description;

@@ -1,5 +1,6 @@
 package io.ost.dlx.solutions;
 
+import io.ost.dlx.ApiClient;
 import io.ost.dlx.api.Companies;
 import io.ost.dlx.api.Projects;
 import io.ost.dlx.api.Users;
@@ -17,12 +18,12 @@ import java.util.TreeMap;
  */
 public class ProjectUsersExporter {
 
-    public static void print() {
+    public static void print(ApiClient client) {
         // TODO Method not completely implemented due to missing phone numbers
-        
-        Project project = Projects.getProjects().get(0);
-        List<User> users = Users.getUsers(project);
-        List<Company> companies = Companies.getCompanies(project);
+
+        Project project = Projects.getProjects(client).get(0);
+        List<User> users = Users.getUsers(project, client);
+        List<Company> companies = Companies.getCompanies(project, client);
 
         Map<String, Company> companyMap = new TreeMap<>();
         for (Company company : companies) {

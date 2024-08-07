@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author Joost
  */
-public class UserDefinedField {
+public class UserDefinedField  implements Nameable {
 
     public String key;
     public String set;

@@ -1,6 +1,6 @@
 package io.ost.dlx.api;
 
-import io.ost.dlx.HttpRequest;
+import io.ost.dlx.ApiClient;
 import io.ost.dlx.model.Project;
 import io.ost.dlx.model.User;
 import java.util.List;
@@ -11,9 +11,9 @@ import java.util.List;
  */
 public class Users {
 
-    public static List<User> getUsers(Project project) {
-        String result = HttpRequest.get("/1.0/projects/" + project.projectId + "/users");
-        return HttpRequest.deserializeAndGetNextPage(result, User.class);
+    public static List<User> getUsers(Project project, ApiClient client) {
+        String result = client.get("/1.0/projects/" + project.projectId + "/users");
+        return client.deserializeAndGetNextPage(result, User.class);
     }
 
 }

@@ -4,7 +4,7 @@ package io.ost.dlx.model;
  *
  * @author Joost
  */
-public class Company {
+public class Company implements Nameable, Identifiable {
 
     public String companyId;
     public String catalogCompanyId;
