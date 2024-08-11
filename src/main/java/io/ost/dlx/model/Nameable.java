@@ -3,6 +3,8 @@ package io.ost.dlx.model;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,5 +46,13 @@ public interface Nameable {
             }
         }
         return result;
+    }
+    
+    public static <T extends Nameable> Map<String, T> getAsMap(List<T> list) {
+        Map<String, T> map = new TreeMap<>();
+        for (T t : list) {
+            map.put(t.getName(), t);
+        }
+        return map;
     }
 }

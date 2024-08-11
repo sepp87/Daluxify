@@ -1,6 +1,7 @@
 package io.ost.dlx;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -31,6 +32,9 @@ import java.util.logging.Logger;
 public class ApiClient {
 
     private static final Map<String, ApiClient> API_CLIENTS = new TreeMap<>();
+    private static final com.google.gson.Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .create();
 
     private final String apiKey;
     private final String baseUrl;
@@ -119,7 +123,7 @@ public class ApiClient {
             return Collections.emptyList();
         }
         List<T> list = new ArrayList<>();
-        Gson gson = RequestParser.getGson();
+        Gson gson = GSON;
         JsonArray items = gson.fromJson(json, JsonObject.class).getAsJsonArray("items");
         Iterator<JsonElement> iterator = items.iterator();
         while (iterator.hasNext()) {
@@ -137,7 +141,7 @@ public class ApiClient {
     }
 
     public <T> T deserializeObject(String json, Class<T> classOfT) {
-        Gson gson = RequestParser.getGson();
+        Gson gson = GSON;
         return deserializeObject(gson, gson.fromJson(json, JsonObject.class), classOfT);
     }
 
@@ -167,7 +171,7 @@ public class ApiClient {
     }
 
     public String getNextPageLink(String responseBody) {
-        Gson gson = RequestParser.getGson();
+        Gson gson = GSON;
         JsonArray links = gson.fromJson(responseBody, JsonObject.class).getAsJsonArray("links");
         Iterator<JsonElement> iterator = links.iterator();
 
