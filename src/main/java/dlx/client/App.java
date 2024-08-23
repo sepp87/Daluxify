@@ -30,6 +30,8 @@ import dlx.client.model.WorkPackage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -37,19 +39,39 @@ import java.util.List;
  */
 public class App {
 
-    public static final boolean LOG = true;
+    public static final boolean LOG = false;
+    public static final boolean LOG_ERRORS = false;
 
-    public static void main(String[] args) throws IOException {
+    static final AtomicInteger pendingCalls = new AtomicInteger(0);
+    static final CountDownLatch latch = new CountDownLatch(1);
+
+    public static void main(String[] args) throws IOException, InterruptedException {
         ApiClient client = new ApiClient(Config.get().getApiKey(), Config.get().getBaseUrl());
 
-        List<Project> candidates = Projects.getProjects(client);
-        List<Project> projects = Nameable.filterListByNames(candidates, Config.get().getProjectNames());
+        List<Project> projects = Projects.getProjects(client);
 
         for (Project p : projects) {
-
+//            Tasks.getTaskChanges(p, client);
+            Tasks.getTaskChangesAsync(p, client);
         }
 
+        System.out.println("PENDING CALLS " + pendingCalls.get());
+        if (pendingCalls.get() > 0) {
+            System.out.println("AWAITING RESPONSES");
+            latch.await();
+        }
+
+        // TASKS 1:35 Async / 1:58 Sync
+        // TASKCHANGES 1:55 Async / 4:04 Sync 
+        System.out.println("DONE");
+
 //        getAll(client);
+    }
+
+    public static void awaitData() throws InterruptedException {
+        if (dlx.client.App.pendingCalls.get() > 0) {
+            dlx.client.App.latch.await();
+        }
     }
 
     public static void getAll(ApiClient client) {
@@ -90,6 +112,11 @@ public class App {
             List<VersionSet> versionSets = VersionSets.getVersionSets(p, client);
             List<VersionSet> fileAreaVersionSets = VersionSets.getVersionSets(p, fileAreas.get(0), client);
         }
+    }
+
+    public static void testFilterProjects(ApiClient client) {
+        List<Project> candidates = Projects.getProjects(client);
+        List<Project> projects = Nameable.filterListByNames(candidates, Config.get().getProjectNames());
     }
 
     public static void testPatchProject(ApiClient client, Project p) {

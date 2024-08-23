@@ -5,7 +5,6 @@ import dlx.client.model.Project;
 import dlx.client.model.ProjectMetadata;
 import dlx.client.model.ProjectMetadataValue;
 import dlx.client.model.ProjectMetadataMapping;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,10 +18,12 @@ public class Projects {
         return client.deserializeAndGetNextPage(result, Project.class);
     }
 
-//    public static Project createProject(Project project, ApiClient client) {
-//        String result = client.post("/5.0/projects/", "");
-//        return client.deserializeObject(result, Project.class);
-//    }
+    public static Project createProject(Project project, String adminEmail, ApiClient client) {
+        String body = ApiClient.GSON.toJson(project);
+
+        String result = client.post("/5.0/projects?adminEmail=" + adminEmail, body);
+        return client.deserializeObject(result, Project.class);
+    }
 
     public static Project updateProject(Project project, ApiClient client) {
         String body = ApiClient.GSON.toJson(project);

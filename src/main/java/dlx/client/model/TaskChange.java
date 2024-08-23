@@ -1,6 +1,5 @@
 package dlx.client.model;
 
-import dlx.client.ListResponse;
 import java.util.List;
 
 /**

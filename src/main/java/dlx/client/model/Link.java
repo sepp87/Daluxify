@@ -1,4 +1,4 @@
-package dlx.client;
+package dlx.client.model;
 
 /**
  *

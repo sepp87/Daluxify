@@ -1,7 +1,5 @@
 package dlx.client.model;
 
-import dlx.client.ObjectResponse;
-
 /**
  *
  * @author Joost

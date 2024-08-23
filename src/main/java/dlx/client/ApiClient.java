@@ -80,21 +80,57 @@ public class ApiClient {
             Request request = builder.build();
             Call call = client.newCall(request);
             Response response = call.execute();
-            if (response.isSuccessful()) {
-                String result = response.body().string();
-                if (App.LOG) {
-                    System.out.println(result);
+            
+            try ( ResponseBody responseBody = response.body()) {
+                if (responseBody == null) {
+                    return null;
                 }
-                return result;
+                String result = responseBody.string();
+                if (response.isSuccessful()) {
+                    if (App.LOG) {
+                        System.out.println(result);
+                    }
+                    return result;
+                }
+                // Print request and response information in case of an unsuccessful call 
+                if (App.LOG_ERRORS) {
+                    System.out.println(method.toString() + " " + url);
+                    System.out.println("Request Body: " + json);
+                    System.out.println("Response Body: " + result);
+                }
             }
-            // Print request and response information in case of an unsuccessful call 
-            System.out.println(method.toString() + " " + url);
-            System.out.println("Request Body: " + json);
-            System.out.println("Response Body: " + response.body().string());
+
         } catch (IOException | IllegalArgumentException ex) {
             Logger.getLogger(ApiClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    public <T> AsyncResponse<T> getAsync(String endpoint, Class T) {
+        return executeRequestAsync(Method.GET, endpoint, null, T);
+    }
+    
+    private <T> AsyncResponse<T> executeRequestAsync(Method method, String endpoint, String json, Class T) {
+        String url = endpoint.startsWith(baseUrl) ? endpoint : baseUrl + endpoint;
+
+        Builder builder = new Request.Builder()
+                .header("X-API-KEY", apiKey)
+                .url(url);
+
+        RequestBody body = json == null || json.equals("") ? null : RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+        switch (method) {
+            case PATCH:
+                builder.patch(body);
+                break;
+            case POST:
+                builder.post(body);
+                break;
+        }
+
+        Request request = builder.build();
+        AsyncResponse<T> asyncResponse = new AsyncResponse(method, url, json, T, this, App.pendingCalls, App.latch);
+        client.newCall(request).enqueue(asyncResponse);
+        return asyncResponse;
     }
 
     public void download(String endpoint, File target) {
@@ -208,8 +244,4 @@ public class ApiClient {
         return nextPage;
     }
 
-}
-
-enum Method {
-    GET, POST, PATCH;
 }

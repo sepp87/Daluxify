@@ -24,7 +24,7 @@
     </dependencies>
     
     <build>
-        <finalName>Daluxify</finalName>
+        <finalName>Dalux-Client</finalName>
         <plugins>   
             
             <!-- See https://maven.apache.org/plugins/ for more plugins    
@@ -92,8 +92,8 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <sourceFile>${basedir}/target/Daluxify-jar-with-dependencies.jar</sourceFile>
-                            <destinationFile>${basedir}/build/Daluxify.jar</destinationFile>
+                            <sourceFile>${basedir}/target/Dalux-Client-jar-with-dependencies.jar</sourceFile>
+                            <destinationFile>${basedir}/build/Dalux-Client.jar</destinationFile>
                         </configuration>
                     </execution>
                 </executions>

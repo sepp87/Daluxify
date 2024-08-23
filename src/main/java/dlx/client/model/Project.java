@@ -16,13 +16,7 @@ public class Project implements Nameable, Identifiable {
     public String number;
     public String created;
     public String closing;
-    public List<Module> modules;
+    public List<dlx.client.model.Module> modules;
     public List<ProjectMetadata> metadata;
 
-    public class Module {
-
-        public String type;
-        public String tier;
-        public String restriction;
-    }
 }
