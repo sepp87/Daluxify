@@ -14,12 +14,13 @@ public class Config {
 
     private static Config config;
 
-    private String appRootDirectory;
-    private String baseUrl;
-    private String apiKey;
-    private List<String> projectNames;
-    private List<String> taskTypes;
-    private List<String> fileAreas;
+    public static final boolean LOG = true;
+    public static final boolean LOG_ERRORS = true;
+    public static final boolean LOG_EXCEPTIONS = true;
+    public static final boolean LOG_PROGRESS = true;
+
+    public static final int API_MAX_TRIES = 3;
+    public static final int API_TIMEOUT_LIMIT = 6;
 
     private static final String CONFIG_DIRECTORY = "config" + File.separatorChar;
     private static final String BUILD_DIRECTORY = "build" + File.separatorChar;
@@ -29,6 +30,13 @@ public class Config {
     private static final String PROJECT_NAMES_FILE = CONFIG_DIRECTORY + "project-names.txt";
     private static final String TASK_TYPES_FILE = CONFIG_DIRECTORY + "task-types.txt";
     private static final String FILE_AREAS_FILE = CONFIG_DIRECTORY + "file-areas.txt";
+
+    private String appRootDirectory;
+    private String baseUrl;
+    private String apiKey;
+    private List<String> projectNames;
+    private List<String> taskTypes;
+    private List<String> fileAreas;
 
     private Config() {
     }

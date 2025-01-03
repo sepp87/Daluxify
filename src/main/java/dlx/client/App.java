@@ -30,8 +30,9 @@ import dlx.client.model.WorkPackage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -39,11 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class App {
 
-    public static final boolean LOG = false;
-    public static final boolean LOG_ERRORS = false;
-
-    static final AtomicInteger pendingCalls = new AtomicInteger(0);
     static final CountDownLatch latch = new CountDownLatch(1);
+    static final PendingCalls pendingCalls = new PendingCalls();
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ApiClient client = new ApiClient(Config.get().getApiKey(), Config.get().getBaseUrl());
@@ -51,8 +49,12 @@ public class App {
         List<Project> projects = Projects.getProjects(client);
 
         for (Project p : projects) {
+
+            // Dalux Box
+            List<FileArea> fileAreas = FileAreas.getFileAreas(p, client);
+            List<File> files = Files.getFiles(p, fileAreas.get(0), client);
 //            Tasks.getTaskChanges(p, client);
-            Tasks.getTaskChangesAsync(p, client);
+//            Tasks.getTaskChangesAsync(p, client);
         }
 
         System.out.println("PENDING CALLS " + pendingCalls.get());
@@ -61,11 +63,13 @@ public class App {
             latch.await();
         }
 
-        // TASKS 1:35 Async / 1:58 Sync
-        // TASKCHANGES 1:55 Async / 4:04 Sync 
         System.out.println("DONE");
 
 //        getAll(client);
+    }
+
+    public static PendingCalls pendingCallsProperty() {
+        return pendingCalls;
     }
 
     public static void awaitData() throws InterruptedException {
@@ -112,6 +116,40 @@ public class App {
             List<VersionSet> versionSets = VersionSets.getVersionSets(p, client);
             List<VersionSet> fileAreaVersionSets = VersionSets.getVersionSets(p, fileAreas.get(0), client);
         }
+    }
+
+    public static void testGetFormsAsync(ApiClient client) throws InterruptedException {
+        List<AsyncResponse<Form>> result = new ArrayList<>();
+
+        List<Project> projects = Projects.getProjects(client);
+        for (Project p : projects) {
+//            Tasks.getTaskChanges(p, client);
+//            Tasks.getTaskChangesAsync(p, client);
+            result.add(Forms.getFormsAsync(p, client));
+        }
+
+        System.out.println("PENDING CALLS " + pendingCalls.get());
+        if (pendingCalls.get() > 0) {
+            System.out.println("AWAITING RESPONSES");
+            latch.await();
+        }
+
+        Map<String, Integer> stats = new TreeMap<>();
+        for (AsyncResponse<Form> r : result) {
+            for (Form f : r.getResult()) {
+                if (f.status == null) {
+                    System.out.println(f.number);
+                    continue;
+                }
+                if (stats.containsKey(f.status)) {
+                    int count = stats.get(f.status) + 1;
+                    stats.put(f.status, count);
+                } else {
+                    stats.put(f.status, 1);
+                }
+            }
+        }
+        System.out.println(stats);
     }
 
     public static void testFilterProjects(ApiClient client) {

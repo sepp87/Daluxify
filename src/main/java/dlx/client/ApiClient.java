@@ -16,12 +16,14 @@ import com.squareup.okhttp.ResponseBody;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,64 +46,77 @@ public class ApiClient {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
         this.client = new OkHttpClient();
+        this.client.setConnectTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
+        this.client.setReadTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
+        this.client.setWriteTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
         API_CLIENTS.put(apiKey, this);
     }
 
     public String get(String endpoint) {
-        return executeRequest(Method.GET, endpoint, null);
+        return buildRequestAndExecute(Method.GET, endpoint, null);
     }
 
     public String post(String endpoint, String json) {
-        return executeRequest(Method.POST, endpoint, json);
+        return buildRequestAndExecute(Method.POST, endpoint, json);
     }
 
     public String patch(String endpoint, String json) {
-        return executeRequest(Method.PATCH, endpoint, json);
+        return buildRequestAndExecute(Method.PATCH, endpoint, json);
     }
 
-    private String executeRequest(Method method, String endpoint, String json) {
+    private String buildRequestAndExecute(Method method, String endpoint, String json) {
+        // Prepare request
         String url = endpoint.startsWith(baseUrl) ? endpoint : baseUrl + endpoint;
+        RequestBody body = json == null || json.equals("") ? null : RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
 
-        try {
-            Builder builder = new Request.Builder()
-                    .header("X-API-KEY", apiKey)
-                    .url(url);
+        // Build request
+        Builder builder = new Request.Builder().header("X-API-KEY", apiKey).url(url);
+        switch (method) {
+            case PATCH:
+                builder.patch(body);
+                break;
+            case POST:
+                builder.post(body);
+                break;
+        }
+        Request request = builder.build();
 
-            RequestBody body = json == null || json.equals("") ? null : RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-            switch (method) {
-                case PATCH:
-                    builder.patch(body);
-                    break;
-                case POST:
-                    builder.post(body);
-                    break;
-            }
+        return executeRequest(request, json, 0);
+    }
 
-            Request request = builder.build();
-            Call call = client.newCall(request);
-            Response response = call.execute();
-            
-            try ( ResponseBody responseBody = response.body()) {
-                if (responseBody == null) {
-                    return null;
-                }
-                String result = responseBody.string();
-                if (response.isSuccessful()) {
-                    if (App.LOG) {
-                        System.out.println(result);
+    String executeRequest(Request request, String body, int attempt) {
+        while (attempt < Config.API_MAX_TRIES) {
+            attempt++;
+            try {
+                Call call = client.newCall(request);
+                Response response = call.execute();
+                try ( ResponseBody responseBody = response.body()) {
+                    if (responseBody == null) {
+                        return null;
                     }
-                    return result;
+                    String result = responseBody.string();
+                    if (response.isSuccessful()) {
+                        if (Config.LOG) {
+                            System.out.println(result);
+                        }
+                        return result;
+                    }
+                    // Log unsuccessful response
+                    if (Config.LOG_ERRORS) {
+                        System.out.println(request.method() + " " + request.urlString());
+                        System.out.println("Request Body: " + body);
+                        System.out.println("Response Body: " + result);
+                    }
                 }
-                // Print request and response information in case of an unsuccessful call 
-                if (App.LOG_ERRORS) {
-                    System.out.println(method.toString() + " " + url);
-                    System.out.println("Request Body: " + json);
-                    System.out.println("Response Body: " + result);
-                }
+            } catch (SocketTimeoutException ex) {
+                System.err.println("Timeout occurred: " + ex.getMessage() + " on attempt " + attempt);
+            } catch (IOException | IllegalArgumentException ex) {
+                System.err.println("Request failed: " + ex.getMessage() + " on attempt " + attempt);
             }
-
-        } catch (IOException | IllegalArgumentException ex) {
-            Logger.getLogger(ApiClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // Log final failure after all attempts
+        if (Config.LOG_ERRORS) {
+            System.err.println("All attempts failed for request: " + request.method() + " " + request.url().toString());
         }
         return null;
     }
@@ -109,7 +124,7 @@ public class ApiClient {
     public <T> AsyncResponse<T> getAsync(String endpoint, Class T) {
         return executeRequestAsync(Method.GET, endpoint, null, T);
     }
-    
+
     private <T> AsyncResponse<T> executeRequestAsync(Method method, String endpoint, String json, Class T) {
         String url = endpoint.startsWith(baseUrl) ? endpoint : baseUrl + endpoint;
 
@@ -158,6 +173,9 @@ public class ApiClient {
     }
 
     public <T> List<T> deserializeAndGetNextPage(String json, Class<T> classOfT) {
+        if (json == null) {
+            return Collections.emptyList();
+        }
         List<T> list = deserializeList(json, classOfT);
         List<T> next = getNextPage(json, classOfT);
         list.addAll(next);
@@ -183,7 +201,7 @@ public class ApiClient {
             }
             var t = gson.fromJson(object, classOfT);
             list.add(t);
-            if (App.LOG) {
+            if (Config.LOG) {
                 System.out.println(gson.toJson(t));
             }
         }
@@ -200,7 +218,7 @@ public class ApiClient {
             object = object.get("data").getAsJsonObject();
         }
         var t = gson.fromJson(object, classOfT);
-        if (App.LOG) {
+        if (Config.LOG) {
             System.out.println(gson.toJson(t));
         }
         return t;

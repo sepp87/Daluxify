@@ -21,12 +21,12 @@ public class AsyncResponse<T> implements Callback {
     private final String requestBody;
     private final ApiClient client;
     private final Class<T> type;
-    private final AtomicInteger pendingCalls;
+    private final PendingCalls pendingCalls;
     private final CountDownLatch latch;
 
     private List<T> result = Collections.emptyList();
 
-    public AsyncResponse(Method method, String url, String json, Class<T> type, ApiClient client, AtomicInteger pendingCalls, CountDownLatch latch) {
+    public AsyncResponse(Method method, String url, String json, Class<T> type, ApiClient client, PendingCalls pendingCalls, CountDownLatch latch) {
         this.method = method;
         this.url = url;
         this.requestBody = json;
@@ -35,15 +35,32 @@ public class AsyncResponse<T> implements Callback {
         this.pendingCalls = pendingCalls;
         this.pendingCalls.incrementAndGet();
         this.latch = latch;
+        System.out.println("PENDING CALLS " + this.pendingCalls.get());
+
     }
 
     @Override
-    public void onFailure(Request request, IOException e) {
-        System.err.println("Request failed: " + e.getMessage());
-        if (pendingCalls.decrementAndGet() == 0) {
-            latch.countDown();
+    public void onFailure(Request request, IOException ex) {
+        if (Config.LOG_EXCEPTIONS) {
+            System.err.println("Request failed: " + ex.getMessage() + " 1x");
         }
-        System.out.println("PENDING CALLS " + pendingCalls.get());
+        
+        try { // can executeRequest or derializeAnGetNextPage even throw an exception?
+            // API call failed once so next call is the second try
+            String responseString = client.executeRequest(request, requestBody, 1);
+            result = client.deserializeAndGetNextPage(responseString, type);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: UNKNOWN EXCEPTION THROWN");
+        } finally {
+            int currentPendingCalls = pendingCalls.decrementAndGet();
+            if (currentPendingCalls == 0) {
+                latch.countDown();
+            }
+            if (Config.LOG_PROGRESS) {
+                System.out.println("PENDING CALLS " + currentPendingCalls);
+            }
+        }
     }
 
     @Override
@@ -57,24 +74,29 @@ public class AsyncResponse<T> implements Callback {
             if (response.isSuccessful()) {
                 // Get the response body
                 String responseString = responseBody.string();
-                if (App.LOG) {
+                if (Config.LOG) {
                     System.out.println(responseString);
                 }
                 result = client.deserializeAndGetNextPage(responseString, type);
 
             } else {
                 // Print request and response information in case of an unsuccessful call 
-                if (App.LOG_ERRORS) {
+                if (Config.LOG_ERRORS) {
                     System.out.println(method.toString() + " " + url);
                     System.out.println("Request Body: " + requestBody);
                     System.out.println("Response Body: " + responseBody.string());
                 }
             }
+        } catch (Exception e) {
+            System.out.println("ERROR: UNKNOWN EXCEPTION THROWN");
         } finally {
-            if (pendingCalls.decrementAndGet() == 0) {
+            int currentPendingCalls = pendingCalls.decrementAndGet();
+            if (currentPendingCalls == 0) {
                 latch.countDown();
             }
-            System.out.println("PENDING CALLS " + pendingCalls.get());
+            if (Config.LOG_PROGRESS) {
+                System.out.println("PENDING CALLS " + currentPendingCalls);
+            }
         }
     }
 
