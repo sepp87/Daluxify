@@ -1,12 +1,13 @@
 package dlx.client.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author Joost
  */
-public class File  implements Nameable, Identifiable {
+public class File  implements Nameable, Identifiable, Serializable {
     public String fileId;
     public String fileRevisionId;
     public String fileName;

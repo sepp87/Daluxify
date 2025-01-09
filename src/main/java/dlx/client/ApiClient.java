@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Dispatcher;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -41,14 +42,22 @@ public class ApiClient {
     private final String apiKey;
     private final String baseUrl;
     private final OkHttpClient client;
+    private static final int MAX_CONCURRENT_REQUESTS = 4;
 
     public ApiClient(String apiKey, String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+
         this.client = new OkHttpClient();
         this.client.setConnectTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
         this.client.setReadTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
         this.client.setWriteTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
+        
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(MAX_CONCURRENT_REQUESTS);
+        dispatcher.setMaxRequestsPerHost(MAX_CONCURRENT_REQUESTS);
+        this.client.setDispatcher(dispatcher);
+
         API_CLIENTS.put(apiKey, this);
     }
 
@@ -96,7 +105,7 @@ public class ApiClient {
                     }
                     String result = responseBody.string();
                     if (response.isSuccessful()) {
-                        if (Config.LOG) {
+                        if (Config.LOG_RESPONSE) {
                             System.out.println(result);
                         }
                         return result;
@@ -201,7 +210,7 @@ public class ApiClient {
             }
             var t = gson.fromJson(object, classOfT);
             list.add(t);
-            if (Config.LOG) {
+            if (Config.LOG_RESPONSE_PRETTY) {
                 System.out.println(gson.toJson(t));
             }
         }
@@ -218,7 +227,7 @@ public class ApiClient {
             object = object.get("data").getAsJsonObject();
         }
         var t = gson.fromJson(object, classOfT);
-        if (Config.LOG) {
+        if (Config.LOG_RESPONSE_PRETTY) {
             System.out.println(gson.toJson(t));
         }
         return t;

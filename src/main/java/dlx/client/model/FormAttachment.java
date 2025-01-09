@@ -1,11 +1,13 @@
 package dlx.client.model;
 
+import java.io.Serializable;
+
 /**
  * Actually called FormAttachmentRelation
  * 
  * @author Joost
  */
-public class FormAttachment {
+public class FormAttachment implements Serializable{
     public String attachmentId;
     public String modified;
     public String formId;

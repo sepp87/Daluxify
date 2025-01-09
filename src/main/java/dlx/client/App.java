@@ -9,7 +9,7 @@ import dlx.client.api.Projects;
 import dlx.client.api.Tasks;
 import dlx.client.api.Users;
 import dlx.client.api.VersionSets;
-import dlx.client.api.WorkPackages;
+import dlx.client.api.Workpackages;
 import dlx.client.model.TaskAttachment;
 import dlx.client.model.Company;
 import dlx.client.model.File;
@@ -26,7 +26,7 @@ import dlx.client.model.Task;
 import dlx.client.model.TaskChange;
 import dlx.client.model.User;
 import dlx.client.model.VersionSet;
-import dlx.client.model.WorkPackage;
+import dlx.client.model.Workpackage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +106,7 @@ public class App {
             List<Task> tasks = Tasks.getTasks(p, client);
             List<TaskChange> changes = Tasks.getTaskChanges(p, client);
             List<TaskAttachment> attachments = Tasks.getTaskAttachments(p, client);
-            List<WorkPackage> workPackages = WorkPackages.getWorkPackages(p, client);
+            List<Workpackage> workPackages = Workpackages.getWorkpackages(p, client);
             List<Form> forms = Forms.getForms(p, client);
 
             // Dalux Box

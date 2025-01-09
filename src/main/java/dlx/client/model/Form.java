@@ -1,10 +1,12 @@
 package dlx.client.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Joost
  */
-public class Form implements Identifiable{
+public class Form implements Identifiable, Serializable{
     
     public String formId;
     public String type;

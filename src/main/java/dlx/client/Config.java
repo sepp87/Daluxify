@@ -14,7 +14,8 @@ public class Config {
 
     private static Config config;
 
-    public static final boolean LOG = true;
+    public static final boolean LOG_RESPONSE = false;
+    public static final boolean LOG_RESPONSE_PRETTY = true;
     public static final boolean LOG_ERRORS = true;
     public static final boolean LOG_EXCEPTIONS = true;
     public static final boolean LOG_PROGRESS = true;

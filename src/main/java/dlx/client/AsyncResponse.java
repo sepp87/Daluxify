@@ -74,7 +74,7 @@ public class AsyncResponse<T> implements Callback {
             if (response.isSuccessful()) {
                 // Get the response body
                 String responseString = responseBody.string();
-                if (Config.LOG) {
+                if (Config.LOG_RESPONSE) {
                     System.out.println(responseString);
                 }
                 result = client.deserializeAndGetNextPage(responseString, type);
