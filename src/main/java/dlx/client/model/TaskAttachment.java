@@ -9,5 +9,6 @@ public class TaskAttachment {
 
     public String taskId;
     public MediaFile mediaFile;
+        public String created;
 
 }

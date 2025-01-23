@@ -14,20 +14,18 @@ import java.util.List;
 public class Projects {
 
     public static List<Project> getProjects(ApiClient client) {
-        String result = client.get("/5.0/projects");
+        String result = client.get("/5.1/projects");
         return client.deserializeAndGetNextPage(result, Project.class);
     }
 
     public static Project createProject(Project project, String adminEmail, ApiClient client) {
         String body = ApiClient.GSON.toJson(project);
-
         String result = client.post("/5.0/projects?adminEmail=" + adminEmail, body);
         return client.deserializeObject(result, Project.class);
     }
 
     public static Project updateProject(Project project, ApiClient client) {
         String body = ApiClient.GSON.toJson(project);
-
         String result = client.patch("/5.0/projects/" + project.projectId, body);
         return client.deserializeObject(result, Project.class);
     }

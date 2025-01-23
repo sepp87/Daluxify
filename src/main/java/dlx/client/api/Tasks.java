@@ -25,8 +25,13 @@ public class Tasks {
     }
 
     public static List<TaskAttachment> getTaskAttachments(Project project, ApiClient client) {
-        String result = client.get("/1.0/projects/" + project.projectId + "/tasks/attachments");
+        String result = client.get("/1.1/projects/" + project.projectId + "/tasks/attachments");
         return client.deserializeAndGetNextPage(result, TaskAttachment.class);
+    }
+
+    public static AsyncResponse<TaskAttachment> getTaskAttachmentsAsync(Project project, ApiClient client) {
+        AsyncResponse<TaskAttachment> result = client.getAsync("/1.1/projects/" + project.projectId + "/tasks/attachments", TaskAttachment.class);
+        return result;
     }
 
     public static List<TaskChange> getTaskChanges(Project project, ApiClient client) {

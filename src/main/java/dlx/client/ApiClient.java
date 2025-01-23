@@ -240,7 +240,7 @@ public class ApiClient {
         List<T> list = new ArrayList<>();
         String link = getNextPageLink(json);
         if (link != null) {
-            String result = this.get(link);
+            String result = this.get(link); // GET next page results
             List<T> ts = deserializeAndGetNextPage(result, classOfT);
             list.addAll(ts);
         }

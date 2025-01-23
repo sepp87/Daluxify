@@ -14,12 +14,12 @@ import java.util.List;
 public class Folders {
 
     public static List<Folder> getFolders(Project project, FileArea fileArea, ApiClient client) {
-        String result = client.get("/5.0/projects/" + project.projectId + "/file_areas/" + fileArea.fileAreaId + "/folders");
+        String result = client.get("/5.1/projects/" + project.projectId + "/file_areas/" + fileArea.fileAreaId + "/folders");
         return client.deserializeAndGetNextPage(result, Folder.class);
     }
 
     public static AsyncResponse<Folder> getFoldersAsync(Project project, FileArea fileArea, ApiClient client) {
-        AsyncResponse<Folder> result = client.getAsync("/5.0/projects/" + project.projectId + "/file_areas/" + fileArea.fileAreaId + "/folders", Folder.class);
+        AsyncResponse<Folder> result = client.getAsync("/5.1/projects/" + project.projectId + "/file_areas/" + fileArea.fileAreaId + "/folders", Folder.class);
         return result;
     }
 }
