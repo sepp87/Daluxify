@@ -52,7 +52,7 @@ public class ApiClient {
         this.client.setConnectTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
         this.client.setReadTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
         this.client.setWriteTimeout(Config.API_TIMEOUT_LIMIT, TimeUnit.SECONDS);
-        
+
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(MAX_CONCURRENT_REQUESTS);
         dispatcher.setMaxRequestsPerHost(MAX_CONCURRENT_REQUESTS);
@@ -119,6 +119,9 @@ public class ApiClient {
                 }
             } catch (SocketTimeoutException ex) {
                 System.err.println("Timeout occurred: " + ex.getMessage() + " on attempt " + attempt);
+                if (attempt == Config.API_MAX_TRIES) {
+                    // TODO Bench this request for later
+                }
             } catch (IOException | IllegalArgumentException ex) {
                 System.err.println("Request failed: " + ex.getMessage() + " on attempt " + attempt);
             }

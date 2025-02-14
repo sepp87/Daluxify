@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -23,6 +22,8 @@ public class AsyncResponse<T> implements Callback {
     private final Class<T> type;
     private final PendingCalls pendingCalls;
     private final CountDownLatch latch;
+    private boolean successful = false;
+    private int code = -1;
 
     private List<T> result = Collections.emptyList();
 
@@ -41,10 +42,11 @@ public class AsyncResponse<T> implements Callback {
 
     @Override
     public void onFailure(Request request, IOException ex) {
+
         if (Config.LOG_EXCEPTIONS) {
             System.err.println("Request failed: " + ex.getMessage() + " 1x");
         }
-        
+
         try { // can executeRequest or derializeAnGetNextPage even throw an exception?
             // API call failed once so next call is the second try
             String responseString = client.executeRequest(request, requestBody, 1);
@@ -65,6 +67,9 @@ public class AsyncResponse<T> implements Callback {
 
     @Override
     public void onResponse(Response response) throws IOException {
+        successful = response.isSuccessful();
+        code = response.code();
+
         try ( ResponseBody responseBody = response.body()) {
             if (responseBody == null) {
                 return;
@@ -106,5 +111,17 @@ public class AsyncResponse<T> implements Callback {
 
     public Class getType() {
         return type;
+    }
+
+    public boolean isSuccessful() {
+        return successful;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public AsyncResponse<T> getAsyncAgain() {
+        return client.getAsync(url, type);
     }
 }

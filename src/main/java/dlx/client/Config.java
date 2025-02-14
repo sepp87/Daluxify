@@ -21,7 +21,9 @@ public class Config {
     public static final boolean LOG_PROGRESS = true;
 
     public static final int API_MAX_TRIES = 3;
-    public static final int API_TIMEOUT_LIMIT = 6;
+    public static final int API_TIMEOUT_LIMIT = 10;
+//    public static final int API_MAX_TRIES = 3;
+//    public static final int API_TIMEOUT_LIMIT = 6;
 
     private static final String CONFIG_DIRECTORY = "config" + File.separatorChar;
     private static final String BUILD_DIRECTORY = "build" + File.separatorChar;
