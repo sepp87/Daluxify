@@ -2,6 +2,7 @@ package dlx.client;
 
 import dlx.client.api.Companies;
 import dlx.client.api.FileAreas;
+import dlx.client.api.FileUpload;
 import dlx.client.api.Files;
 import dlx.client.api.Folders;
 import dlx.client.api.Forms;
@@ -46,26 +47,12 @@ public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
         ApiClient client = new ApiClient(Config.get().getApiKey(), Config.get().getBaseUrl());
 
-        List<Project> projects = Projects.getProjects(client);
-
-        for (Project p : projects) {
-
-            // Dalux Box
-            List<FileArea> fileAreas = FileAreas.getFileAreas(p, client);
-            List<File> files = Files.getFiles(p, fileAreas.get(0), client);
-//            Tasks.getTaskChanges(p, client);
-//            Tasks.getTaskChangesAsync(p, client);
-        }
-
         System.out.println("PENDING CALLS " + pendingCalls.get());
         if (pendingCalls.get() > 0) {
             System.out.println("AWAITING RESPONSES");
             latch.await();
         }
-
         System.out.println("DONE");
-
-//        getAll(client);
     }
 
     public static PendingCalls pendingCallsProperty() {
@@ -78,7 +65,7 @@ public class App {
         }
     }
 
-    public static void getAll(ApiClient client) {
+    public static void testGetAll(ApiClient client) {
 
         // Dalux Project Metadata
         List<ProjectMetadataMapping> mappingsToCreate = Projects.getProjectMetadataToCreate(client);
@@ -115,6 +102,40 @@ public class App {
             List<Folder> folders = Folders.getFolders(p, fileAreas.get(0), client);
             List<VersionSet> versionSets = VersionSets.getVersionSets(p, client);
             List<VersionSet> fileAreaVersionSets = VersionSets.getVersionSets(p, fileAreas.get(0), client);
+        }
+    }
+
+    public static void testUploadFile(ApiClient client) throws IOException {
+        List<Project> candidates = Projects.getProjects(client);
+        Project project = Nameable.filterListByNames(candidates, Config.get().getProjectNames()).get(0);
+
+        // Dalux Box
+        List<FileArea> fileAreas = FileAreas.getFileAreas(project, client);
+        FileArea files = null;
+        for (FileArea fileArea : fileAreas) {
+            if (fileArea.fileAreaType.equals("files")) {
+                files = fileArea;
+            }
+        }
+        if (files == null) {
+            return;
+        }
+
+        Folder folder = Folders.getFolders(project, files, client).get(0);
+        String uploadGuid = FileUpload.createUpload(project, files, client);
+        java.io.File pdf = new java.io.File("example.pdf");
+
+        boolean isSuccessfull = FileUpload.uploadFile(project, files, uploadGuid, pdf, client);
+
+        if (isSuccessfull) {
+            // Only the properties fileId, folderId, properties, fileType and fileName are considered in the metadata.
+            dlx.client.model.File file = new dlx.client.model.File();
+            file.fileName = pdf.getName();
+            file.folderId = folder.folderId;
+            file.fileType = "document";
+            file.fileSize = java.nio.file.Files.size(pdf.toPath());
+
+            FileUpload.finishUpload(project, files, uploadGuid, file, client);
         }
     }
 

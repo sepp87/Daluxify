@@ -3,7 +3,7 @@ package dlx.client.solutions;
 import dlx.client.Config;
 import dlx.client.ApiClient;
 import dlx.client.App;
-import dlx.client.Util;
+import dlx.client.Utils;
 import dlx.client.api.Projects;
 import dlx.client.model.Project;
 import dlx.client.api.Tasks;
@@ -37,7 +37,7 @@ public class TaskAttachmentsDownloader {
 
             String projectDirectory = Config.get().getDoneDirectory() + project.projectName + File.separatorChar;
             if (!attachments.isEmpty()) {
-                Util.createDirectory(new File(projectDirectory));
+                Utils.createDirectory(new File(projectDirectory));
             }
 
             System.out.println();
@@ -50,7 +50,7 @@ public class TaskAttachmentsDownloader {
                 String url = attachment.mediaFile.fileDownload;
                 Task task = tasks.get(attachment.taskId);
                 String taskDirectory = projectDirectory + task.number + File.separatorChar;
-                Util.createDirectory(new File(taskDirectory));
+                Utils.createDirectory(new File(taskDirectory));
                 String targetPath = taskDirectory + filenames.get(url);
                 File target = new File(targetPath);
                 System.out.println(i + " Downloading " + targetPath);

@@ -53,16 +53,16 @@ public class Config {
 
     private static void loadConfig() {
         config = new Config();
-        config.appRootDirectory = Util.getAppRootDirectory(config, BUILD_DIRECTORY);
+        config.appRootDirectory = Utils.getAppRootDirectory(config, BUILD_DIRECTORY);
 
         createFilesAndDirectories();
 
         try {
-            config.baseUrl = Util.readFileAsString(new File(config.appRootDirectory + BASE_URL_FILE));
-            config.apiKey = Util.readFileAsString(new File(config.appRootDirectory + API_KEY_FILE));
-            config.projectNames = Util.readFileAsStringList(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
-            config.taskTypes = Util.readFileAsStringList(new File(config.appRootDirectory + TASK_TYPES_FILE));
-            config.fileAreas = Util.readFileAsStringList(new File(config.appRootDirectory + FILE_AREAS_FILE));
+            config.baseUrl = Utils.readFileAsString(new File(config.appRootDirectory + BASE_URL_FILE));
+            config.apiKey = Utils.readFileAsString(new File(config.appRootDirectory + API_KEY_FILE));
+            config.projectNames = Utils.readFileAsStringList(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
+            config.taskTypes = Utils.readFileAsStringList(new File(config.appRootDirectory + TASK_TYPES_FILE));
+            config.fileAreas = Utils.readFileAsStringList(new File(config.appRootDirectory + FILE_AREAS_FILE));
 
         } catch (IOException ex) {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
@@ -71,13 +71,13 @@ public class Config {
     }
 
     private static void createFilesAndDirectories() {
-        Util.createDirectory(new File(config.appRootDirectory + DONE_DIRECTORY));
-        Util.createDirectory(new File(config.appRootDirectory + CONFIG_DIRECTORY));
-        Util.createFile(new File(config.appRootDirectory + BASE_URL_FILE));
-        Util.createFile(new File(config.appRootDirectory + API_KEY_FILE));
-        Util.createFile(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
-        Util.createFile(new File(config.appRootDirectory + TASK_TYPES_FILE));
-        Util.createFile(new File(config.appRootDirectory + FILE_AREAS_FILE));
+        Utils.createDirectory(new File(config.appRootDirectory + DONE_DIRECTORY));
+        Utils.createDirectory(new File(config.appRootDirectory + CONFIG_DIRECTORY));
+        Utils.createFile(new File(config.appRootDirectory + BASE_URL_FILE));
+        Utils.createFile(new File(config.appRootDirectory + API_KEY_FILE));
+        Utils.createFile(new File(config.appRootDirectory + PROJECT_NAMES_FILE));
+        Utils.createFile(new File(config.appRootDirectory + TASK_TYPES_FILE));
+        Utils.createFile(new File(config.appRootDirectory + FILE_AREAS_FILE));
     }
 
     public String getAppRootDirectory() {
