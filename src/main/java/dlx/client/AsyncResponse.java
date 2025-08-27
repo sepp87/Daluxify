@@ -122,6 +122,8 @@ public class AsyncResponse<T> implements Callback {
     }
 
     public AsyncResponse<T> getAsyncAgain() {
+        this.pendingCalls.incrementAndGet();
+        System.out.println("PENDING CALLS " + this.pendingCalls.get());
         return client.getAsync(url, type);
     }
 }

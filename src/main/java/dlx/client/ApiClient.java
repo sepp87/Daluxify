@@ -46,7 +46,7 @@ public class ApiClient {
     private final String apiKey;
     private final String baseUrl;
     private final OkHttpClient client;
-    private static final int MAX_CONCURRENT_REQUESTS = 3;
+    private static final int MAX_CONCURRENT_REQUESTS = 4;
 
     public ApiClient(String apiKey, String baseUrl) {
         this.apiKey = apiKey;

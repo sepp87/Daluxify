@@ -64,9 +64,16 @@ public class Utils {
     }
 
     public static File createFile(File file) {
+        return createFile(file, null);
+    }
+
+    public static File createFile(File file, String content) {
         if (!file.exists()) {
             try {
                 file.createNewFile();
+                if (content != null) {
+                    Files.writeString(file.toPath(), content);
+                }
             } catch (IOException ex) {
                 Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
             }
