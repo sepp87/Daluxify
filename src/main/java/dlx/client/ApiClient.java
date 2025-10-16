@@ -103,7 +103,7 @@ public class ApiClient {
             try {
                 Call call = client.newCall(request);
                 Response response = call.execute();
-                try ( ResponseBody responseBody = response.body()) {
+                try (ResponseBody responseBody = response.body()) {
                     if (responseBody == null) {
                         return null;
                     }
@@ -177,7 +177,7 @@ public class ApiClient {
         String url = endpoint.startsWith(baseUrl) ? endpoint : baseUrl + endpoint;
         long totalBytes = file.length();
 
-        try ( FileInputStream fis = new FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[chunkSizeLimit];
             int bytesRead;
             long bytesUploaded = 0;
@@ -308,6 +308,9 @@ public class ApiClient {
     }
 
     public <T> T deserializeObject(String json, Class<T> classOfT) {
+        if(json == null) {
+            return null;
+        }
         Gson gson = GSON;
         return deserializeObject(gson, gson.fromJson(json, JsonObject.class), classOfT);
     }
